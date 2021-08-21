@@ -8,7 +8,7 @@ jobs:
       - checkout
       - run: cd frontend
       - run: npm i
-      - run: npm run build
+      - run: npm run lint
   # build-backend:
   #   docker:
   #     - image: circleci/node:13.8.0
