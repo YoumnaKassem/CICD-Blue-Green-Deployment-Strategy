@@ -9,7 +9,8 @@ jobs:
       - run: cd frontend
       - run: npm i
       - save_cache:
-          paths: frontend/node_modules
+          paths: 
+            - ~/frontend/node_modules
           key: "frontend-build-npm-packages"
       - run: npm run build
   # build-backend:
