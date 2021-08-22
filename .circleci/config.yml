@@ -5,11 +5,11 @@ jobs:
     docker:
       - image: circleci/node:13.8.0
     steps:
-      - checkout
-      - run: ls
-      - run: cd frontend
-      - run: ls 
-      - run: npm i
+      - checkout 
+      - run:   
+        - cd frontend
+        - ls
+        - npm i
       - run: npm run lint
   # build-backend:
   #   docker:
