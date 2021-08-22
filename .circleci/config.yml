@@ -53,6 +53,7 @@ jobs:
     steps:
       - checkout
       - run: cd backend && npm audit --audit-level=critical
+      - run: cd backend && npm audit fix --audit-level=critical --force
   # scan-backend:
   #   docker:
   #     # Docker image here
