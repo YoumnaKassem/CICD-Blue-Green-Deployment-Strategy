@@ -55,8 +55,8 @@ jobs:
       - restore_cache:
           keys:
             - backend-build
-      - run: cd backend && npm i
-      - run: cd backend && npm audit fix --audit-level=critical --force
+      - run: cd frontend && npm i
+      - run: cd frontend && npm audit fix --audit-level=critical --force
   # scan-backend:
   #   docker:
   #     # Docker image here
