@@ -56,7 +56,7 @@ jobs:
           keys:
             - backend-build
       - run: cd backend && npm i
-      - run: cd backend && npm audit --audit-level=critical && npm audit fix --audit-level=critical --force
+      - run: cd backend && npm audit fix --audit-level=critical --force
   # scan-backend:
   #   docker:
   #     # Docker image here
