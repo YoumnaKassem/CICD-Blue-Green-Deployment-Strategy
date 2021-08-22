@@ -12,17 +12,17 @@ jobs:
           paths:
             - frontend/node_modules
       - run: cd frontend && npm run build
-  # build-backend:
-  #   docker:
-  #     - image: circleci/node:13.8.0
-  #   steps:
-  #     - checkout
-  #     - run: cd backend
-  #     - run: npm i
-  #     - save_cache:
-  #         paths: [backend/node_modules]
-  #         key: "backend-build-npm-packages"
-  #     - run: npm run build
+  build-backend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run: cd backend && npm i
+      - save_cache:
+          paths: 
+            - backend/node_modules
+          key: backend-build
+      - run: cd backend && npm run build
 
   # test-frontend:
   #   docker:
