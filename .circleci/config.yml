@@ -68,6 +68,41 @@ jobs:
       - run: cd backend && npm i
       - run: cd backend && npm audit fix --audit-level=critical --force
 
+  deploy-infrastructure:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout   "${CIRCLE_WORKFLOW_ID}"
+      - run:
+          name: Ensure back-end infrastructure exists
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/backend.yml \
+              --tags project="${CIRCLE_WORKFLOW_ID}"\
+              --stack-name "back-end-${CIRCLE_WORKFLOW_ID}" \
+              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}"  
+
+      
+      # - run:
+      #     name: Ensure front-end infrastructure exist
+      #     command: |
+      #       aws cloudformation deploy \
+      #         --template-file .circleci/files/frontend.yml \
+      #         #--tags project=your-tag \
+      #         # --stack-name "your front-end stack name with workflow id" \
+      #         # --parameter-overrides ID="your workflow id"  
+      #         exit 1
+      # - run:
+      #     name: Add back-end ip to ansible inventory
+      #     command: |
+      #       # Your code here
+      #       exit 1
+      # - persist_to_workspace:
+      #     root: ~/
+      #     paths:
+      #       - project/.circleci/ansible/inventory.txt
+      # Here's where you will add some code to rollback on failure      
+
   
 workflows:
   default:
@@ -82,4 +117,9 @@ workflows:
           requires: [test-backend]
       - scan-frontend:
           requires: [test-frontend]
+      - deploy-infrastructure:
+          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+          # filters:
+          #   branches:
+          #     only: [test-feature-branch]
       
