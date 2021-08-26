@@ -78,24 +78,25 @@ jobs:
           command: |
             aws cloudformation deploy \
             --template-file .circleci/files/backend.yml \
-            --tags project=${CIRCLE_WORKFLOW_ID} \
+            --tags project=udapeople \
             --stack-name backend-${CIRCLE_WORKFLOW_ID} \
             --parameter-overrides ID=${CIRCLE_WORKFLOW_ID}
             URLS=$(aws ec2 describe-instances --region us-east-1 --query "Reservations[*].Instances[*].PublicIpAddress" \
             --output text)
-            curl -H "Content-Type: text/plain" -H "token: 659a15c4-002a-4771-a278-4566cf16e37c" --request PUT --data "$URLS" https://api.memstash.io/values/back-end-url
+            curl -H "Content-Type: text/plain" -H "token: e33142a6-dcb5-43a8-a241-ed75d0b1fc21" --request PUT --data "$URLS" https://api.memstash.io/values/backend
 
       # - run: curl -H "Content-Type: text/plain" -H "token: 47e9dc3f-13af-4b25-9c9e-e359511d3d41" --request PUT --data "${ec2URL}" https://api.memstash.io/values/back-end-url
       
-      # - run:
-      #     name: Ensure front-end infrastructure exist
-      #     command: |
-      #       aws cloudformation deploy \
-      #         --template-file .circleci/files/frontend.yml \
-      #         #--tags project=your-tag \
-      #         # --stack-name "your front-end stack name with workflow id" \
-      #         # --parameter-overrides ID="your workflow id"  
-      #         exit 1
+      - run:
+          name: Ensure front-end infrastructure exist
+          command: |
+            aws cloudformation deploy \
+              --template-file .circleci/files/frontend.yml \
+              --tags project=udapeople \
+              --stack-name frontend-${CIRCLE_WORKFLOW_ID} \
+              --parameter-overrides ID=${CIRCLE_WORKFLOW_ID}  
+              ARN=$(aws s3 ls | grep udapeople)
+              curl -H "Content-Type: text/plain" -H "token: edb59b46-5d33-44b5-bf85-0bd0d1c1185d" --request PUT --data "$ARN" https://api.memstash.io/values/frontend
       # - run:
       #     name: Add back-end ip to ansible inventory
       #     command: |
