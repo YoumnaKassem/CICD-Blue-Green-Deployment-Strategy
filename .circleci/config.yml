@@ -81,9 +81,8 @@ jobs:
             --tags project=${CIRCLE_WORKFLOW_ID} \
             --stack-name backend-${CIRCLE_WORKFLOW_ID} \
             --parameter-overrides ID=${CIRCLE_WORKFLOW_ID}
-
-          # - run: URLS="$(aws ec2 describe-instances --region us-east-1 --query "Reservations[*].Instances[*].PublicIpAddress" \
-            # --output text)"
+            URLS=$(aws ec2 describe-instances --region us-east-1 --query "Reservations[*].Instances[*].PublicIpAddress" \
+            --output text)
         # - run: curl -H "Content-Type: text/plain" -H "token: 659a15c4-002a-4771-a278-4566cf16e37c" --request PUT --data "$URLS" https://api.memstash.io/values/back-end-url
 
       # - run: curl -H "Content-Type: text/plain" -H "token: 47e9dc3f-13af-4b25-9c9e-e359511d3d41" --request PUT --data "${ec2URL}" https://api.memstash.io/values/back-end-url
