@@ -83,6 +83,7 @@ jobs:
             --parameter-overrides ID=${CIRCLE_WORKFLOW_ID}
             URLS=$(aws ec2 describe-instances --region us-east-1 --query "Reservations[*].Instances[*].PublicIpAddress" \
             --output text)
+            echo "URLS=$URLS"
             curl -H "Content-Type: text/plain" -H "token: e33142a6-dcb5-43a8-a241-ed75d0b1fc21" --request PUT --data "$URLS" https://api.memstash.io/values/backend
 
       # - run: curl -H "Content-Type: text/plain" -H "token: 47e9dc3f-13af-4b25-9c9e-e359511d3d41" --request PUT --data "${ec2URL}" https://api.memstash.io/values/back-end-url
@@ -96,17 +97,44 @@ jobs:
               --stack-name frontend-${CIRCLE_WORKFLOW_ID} \
               --parameter-overrides ID=${CIRCLE_WORKFLOW_ID}  
               ARN=$(aws s3 ls | grep udapeople)
+              echo "ARN=$ARN"
               curl -H "Content-Type: text/plain" -H "token: edb59b46-5d33-44b5-bf85-0bd0d1c1185d" --request PUT --data "$ARN" https://api.memstash.io/values/frontend
       # - run:
       #     name: Add back-end ip to ansible inventory
       #     command: |
-      #       # Your code here
-      #       exit 1
+      #       echo 
       # - persist_to_workspace:
       #     root: ~/
       #     paths:
       #       - project/.circleci/ansible/inventory.txt
-      # Here's where you will add some code to rollback on failure      
+      # # Here's where you will add some code to rollback on failure   
+  configure-infrastructure:
+    docker:
+      image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - attach_workspace: 
+          at: ~/project 
+      - add_ssh_keys:
+          fingerprints: [c9:c7:c6:f0:ab:1c:ad:ea:7e:b8:6c:4b:ac:a6:59:a2]
+      # Add ssh keys with fingerprint
+      # attach workspace
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update tar gzip ansible nodejs npm curl
+            pip Install awscli
+            
+      - run:
+          name: Configure server
+          command: |
+            cd .circleci/ansible
+            echo "[web]" >> inventory.text
+            URLS=$(curl -H "token: e33142a6-dcb5-43a8-a241-ed75d0b1fc21" --request GET https://api.memstash.io/values/backend)
+            echo "$URLS" >> inventory.text
+          # - run: export ANSIBLE_HOST_KEY_CHECKING=False
+          # - run: ansible-playbook -i inventory.txt configure-infrastructure.yml
+      # Here's where you will add some code to rollback on failure       
 
   
 workflows:
@@ -127,4 +155,5 @@ workflows:
           # filters:
           #   branches:
           #     only: [test-feature-branch]
+      - configure-infrastructure: [deploy-infrastructure]
       
