@@ -123,7 +123,7 @@ jobs:
           name: Install dependencies
           command: |
             apk add --update tar gzip ansible nodejs npm curl
-            pip Install awscli
+            pip install awscli
             
       - run:
           name: Configure server
