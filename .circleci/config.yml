@@ -128,7 +128,7 @@ jobs:
       - run:
           name: Configure server
           command: |
-            cd .circleci/ansible
+            cd .circleci/files/ansible
             echo "[web]" >> inventory.text
             URLS=$(curl -H "token: e33142a6-dcb5-43a8-a241-ed75d0b1fc21" --request GET https://api.memstash.io/values/backend)
             echo "$URLS" >> inventory.text
