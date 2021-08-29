@@ -132,9 +132,6 @@ jobs:
           command: |
             apk add --update tar gzip ansible nodejs npm curl
             pip install awscli
-      - run:  
-          command: . ./ourlongscript.sh
-          no_output_timeout: 30m
             
       - run:
           name: Configure server
@@ -145,6 +142,8 @@ jobs:
             echo "$URLS" >> inventory.txt
             export ANSIBLE_HOST_KEY_CHECKING=False
             ansible-playbook -i inventory.txt configure-server.yml
+            no_output_timeout: 30m
+
       # Here's where you will add some code to rollback on failure       
 
   
