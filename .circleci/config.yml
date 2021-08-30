@@ -99,6 +99,19 @@ jobs:
               ARN=$(aws s3 ls | grep udapeople)
               echo "ARN=$ARN"
               curl -H "Content-Type: text/plain" -H "token: edb59b46-5d33-44b5-bf85-0bd0d1c1185d" --request PUT --data "$ARN" https://api.memstash.io/values/frontend
+
+      - run:
+          name: Add back-end ip to ansible inventory
+          command: |
+            aws ec2 describe-instances \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=tag:project,Values=udapeople" \
+              --output text >> .circleci/ansible/inventory.txt
+            cat .circleci/ansible/inventory.txt
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/.circleci/ansible/inventory.txt  
       # - run:
       #     name: Add back-end ip to ansible inventory
       #     command: |
@@ -111,38 +124,69 @@ jobs:
   configure-infrastructure:
     docker:
       - image: python:3.7-alpine3.11
-        environment:
-          TYPEORM_CONNECTION: $TYPEORM_CONNECTION
-          TYPEORM_HOST: $TYPEORM_HOST
-          TYPEORM_USERNAME: $TYPEORM_USERNAME
-          TYPEORM_PASSWORD: $TYPEORM_PASSWORD
-          TYPEORM_DATABASE: $TYPEORM_DATABASE
-          TYPEORM_MIGRATIONS: $TYPEORM_MIGRATIONS
-          TYPEORM_ENTITIES: $TYPEORM_ENTITIES
     steps:
       - checkout
-      - attach_workspace: 
-          at: ~/project 
       - add_ssh_keys:
-          fingerprints: [c9:c7:c6:f0:ab:1c:ad:ea:7e:b8:6c:4b:ac:a6:59:a2]
-      # Add ssh keys with fingerprint
-      # attach workspace
+          fingerprints: ["c9:c7:c6:f0:ab:1c:ad:ea:7e:b8:6c:4b:ac:a6:59:a2"]
+      - attach_workspace:
+          at: ~/
       - run:
           name: Install dependencies
           command: |
-            apk add --update tar gzip ansible nodejs npm curl
-            pip install awscli
-            
+            apk add --update ansible
+            cat .circleci/ansible/inventory.txt
       - run:
           name: Configure server
           command: |
-            cd .circleci/files/ansible
-            echo "[web]" >> inventory.txt
-            URLS=$(curl -H "token: e33142a6-dcb5-43a8-a241-ed75d0b1fc21" --request GET https://api.memstash.io/values/backend)
-            echo "$URLS" >> inventory.txt
-            export ANSIBLE_HOST_KEY_CHECKING=False
-            ansible-playbook -i inventory.txt configure-server.yml
-            no_output_timeout: 30m
+            echo ENVIRONMENT=production > "backend/.env"
+            echo TYPEORM_CONNECTION=postgres >> "backend/.env"
+            echo TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts >> "backend/.env"
+            echo TYPEORM_MIGRATIONS=./src/migrations/*.ts >> "backend/.env"
+            echo TYPEORM_MIGRATIONS_DIR=./src/migrations >> "backend/.env"
+            echo NODE_ENV=production >> "backend/.env"
+            echo TYPEORM_HOST=$TYPEORM_HOST >> "backend/.env"
+            echo TYPEORM_PORT=$TYPEORM_PORT >> "backend/.env"
+            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> "backend/.env"
+            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
+            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
+            ansible-playbook \
+              -i .circleci/ansible/inventory.txt \
+              .circleci/ansible/configure-server.yml  
+  # configure-infrastructure:
+  #   docker:
+  #     - image: python:3.7-alpine3.11
+  #       environment:
+  #         TYPEORM_CONNECTION: $TYPEORM_CONNECTION
+  #         TYPEORM_HOST: $TYPEORM_HOST
+  #         TYPEORM_USERNAME: $TYPEORM_USERNAME
+  #         TYPEORM_PASSWORD: $TYPEORM_PASSWORD
+  #         TYPEORM_DATABASE: $TYPEORM_DATABASE
+  #         TYPEORM_MIGRATIONS: $TYPEORM_MIGRATIONS
+  #         TYPEORM_ENTITIES: $TYPEORM_ENTITIES
+  #   steps:
+  #     - checkout
+  #     - attach_workspace: 
+  #         at: ~/
+  #     - add_ssh_keys:
+  #         fingerprints: [c9:c7:c6:f0:ab:1c:ad:ea:7e:b8:6c:4b:ac:a6:59:a2]
+  #     # Add ssh keys with fingerprint
+  #     # attach workspace
+  #     - run:
+  #         name: Install dependencies
+  #         command: |
+  #           apk add --update tar gzip ansible nodejs npm curl
+  #           pip install awscli
+            
+  #     - run:
+  #         name: Configure server
+  #         command: |
+  #           cd .circleci/files/ansible
+  #           echo "[web]" >> inventory.txt
+  #           URLS=$(curl -H "token: e33142a6-dcb5-43a8-a241-ed75d0b1fc21" --request GET https://api.memstash.io/values/backend)
+  #           echo "$URLS" >> inventory.txt
+  #           export ANSIBLE_HOST_KEY_CHECKING=False
+  #           ansible-playbook -i inventory.txt configure-server.yml
+  #           no_output_timeout: 30m
             
 
       # Here's where you will add some code to rollback on failure       
