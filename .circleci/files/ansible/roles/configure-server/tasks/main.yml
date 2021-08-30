@@ -1,37 +1,28 @@
 ---
- - name: Print env variable
-   shell: echo $PATH
-   register: print_result
+- name: "update apt packages."
+  become: yes
+  apt:
+    update_cache: yes
 
- - name: print message
-   debug:
-     msg: "{{ print_result.stdout_lines }}"
+- name: "upgrade packages"
+  become: yes
+  apt:
+    upgrade: yes
 
-# ---
-# - name: "update apt packages."
-#   become: yes
-#   apt:
-#     update_cache: yes
+- name: "install dependencies."
+  become: yes
+  apt:
+    name: ["nodejs", "npm"]
+    state: latest
+    update_cache: yes
 
-# - name: "upgrade packages"
-#   become: yes
-#   apt:
-#     upgrade: yes
-
-# - name: "install dependencies."
-#   become: yes
-#   apt:
-#     name: ["nodejs", "npm"]
-#     state: latest
-#     update_cache: yes
-
-# - name: "install pm2"
-#   become: yes
-#   npm:
-#     name: pm2
-#     global: yes
-#     production: yes
-#     state: present
+- name: "install pm2"
+  become: yes
+  npm:
+    name: pm2
+    global: yes
+    production: yes
+    state: present
 
 # # - name: Creates directory
 # #   file:
